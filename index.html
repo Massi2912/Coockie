@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Cookie Clicker mit Skins und Safe</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Spielbereich links -->
+    <div class="game-area">
+        <h1>Cookie Clicker</h1>
+        <p class="score">Cookies: <span id="score">0</span></p>
+
+        <!-- Anzeige pro Klick oben rechts -->
+        <div class="per-click-display" id="perClick">
+            Cookies pro Klick: <span id="perClickNumber">1</span>
+        </div>
+
+        <!-- Mega-Cookie Timer -->
+        <div class="mega-container" id="megaContainer">
+            <svg class="progress-ring" width="100" height="100">
+                <circle class="progress-ring__circle" stroke="#d6862e" stroke-width="8" fill="transparent" r="45" cx="50" cy="50"/>
+            </svg>
+            <span class="mega-timer" id="megaTimer"></span>
+        </div>
+
+        <!-- Floating Cookies Layer -->
+        <div id="floatingContainer"></div>
+
+        <!-- Cookie -->
+        <button id="cookie">
+            <div></div><div></div><div></div><div></div><div></div>
+        </button>
+    </div>
+
+    <!-- SHOP -->
+    <div class="shop">
+        <h2>Shop</h2>
+
+        <!-- Upgrade -->
+        <div class="shop-item">
+            <p>Besserer Cookie (+1 pro Klick)</p>
+            <p>Kosten: <span id="upgradeCost">50</span></p>
+            <button id="buyUpgrade">Kaufen</button>
+        </div>
+
+        <!-- Mega Cookie -->
+        <div class="shop-item">
+            <p>Mega Cookie (x2 pro Klick für 30 Sekunden)</p>
+            <p>Kosten: <span id="megaCost">1000</span></p>
+            <button id="buyMegaCookie">Kaufen</button>
+        </div>
+
+        <!-- Skins -->
+        <div class="shop-item" id="skinGreenShop">
+            <div class="skin-preview green"></div>
+            <p>Green Cookie Skin</p>
+            <p>Kosten: 200</p>
+            <button class="buySkin" data-skin="green" data-cost="200">Kaufen</button>
+        </div>
+
+        <div class="shop-item" id="skinTurquoiseShop">
+            <div class="skin-preview turquoise"></div>
+            <p>Turquoise Cookie Skin</p>
+            <p>Kosten: 750</p>
+            <button class="buySkin" data-skin="turquoise" data-cost="750">Kaufen</button>
+        </div>
+
+        <div class="shop-item" id="skinRedShop">
+            <div class="skin-preview red"></div>
+            <p>Red Cookie Skin</p>
+            <p>Kosten: 1500</p>
+            <button class="buySkin" data-skin="red" data-cost="1500">Kaufen</button>
+        </div>
+
+        <div class="shop-item" id="skinGoldShop">
+            <div class="skin-preview gold"></div>
+            <p>Golden Cookie Skin</p>
+            <p>Kosten: 10000</p>
+            <button class="buySkin" data-skin="gold" data-cost="10000">Kaufen</button>
+        </div>
+
+        <div class="shop-item" id="skinRainbowShop">
+            <div class="skin-preview rainbow"></div>
+            <p>Rainbow Cookie Skin</p>
+            <p>Kosten: 50000</p>
+            <button class="buySkin" data-skin="rainbow" data-cost="50000">Kaufen</button>
+        </div>
+
+        <!-- Safe-Code-Eingabe -->
+        <div class="shop-item" id="codeSafeSection">
+            <p>Gib den Code ein:</p>
+            <div id="codeDisplay">_ _ _ _ _ _</div>
+            <div id="numberPad">
+                <button class="numBtn">0</button>
+                <button class="numBtn">1</button>
+                <button class="numBtn">2</button>
+                <button class="numBtn">3</button>
+                <button class="numBtn">4</button>
+                <button class="numBtn">5</button>
+                <button class="numBtn">6</button>
+                <button class="numBtn">7</button>
+                <button class="numBtn">8</button>
+                <button class="numBtn">9</button>
+                <button id="clearCode">C</button>
+                <button id="submitSafeCode">OK</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Skin Menü -->
+    <div class="skin-menu">
+        <h3>Cookie Skins</h3>
+        <div id="skinsContainer">
+            <button class="skin-btn active" data-skin="standard">Standard</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+let score = 0;
+let pointsPerClick = 1;
+let upgradeCost = 50;
+let upgradeMultiplier = 1.5;
+
+let megaCost = 1000;
+const megaDuration = 30;
+
+const cookie = document.getElementById("cookie");
+const scoreDisplay = document.getElementById("score");
+const buyUpgrade = document.getElementById("buyUpgrade");
+const upgradeCostDisplay = document.getElementById("upgradeCost");
+const buyMegaCookie = document.getElementById("buyMegaCookie");
+const megaTimer = document.getElementById("megaTimer");
+const megaCostDisplay = document.getElementById("megaCost");
+const megaContainer = document.getElementById("megaContainer");
+const progressCircle = document.querySelector(".progress-ring__circle");
+const perClickDisplay = document.getElementById("perClickNumber");
+const skinsContainer = document.getElementById("skinsContainer");
+
+const floatingContainer = document.getElementById("floatingContainer");
+
+let usedCodes = new Set();
+
+/* COOKIE CLICK */
+cookie.addEventListener("click", () => {
+    score += pointsPerClick;
+    scoreDisplay.textContent = score;
+
+    cookie.classList.add("clicked");
+    setTimeout(() => cookie.classList.remove("clicked"), 200);
+
+    createFloatingCookie(pointsPerClick); // Floating-Cookie Animation
+});
+
+/* Floating Cookie Animation mit zufälliger Position */
+function createFloatingCookie(amount){
+    const floatCookie = document.createElement("div");
+    floatCookie.className = "floating-cookie";
+    floatCookie.textContent = "+" + amount;
+
+    const rect = cookie.getBoundingClientRect();
+    const containerRect = floatingContainer.getBoundingClientRect();
+
+    // Zufälliger horizontaler Offset (-30 bis +30px)
+    const randomX = Math.random() * 60 - 30; 
+    // Zufälliger vertikaler Offset (-20 bis -60px über dem Cookie)
+    const randomY = Math.random() * 40 - 60;
+
+    floatCookie.style.left = (rect.left + rect.width / 2 - containerRect.left - 15 + randomX) + "px";
+    floatCookie.style.top = (rect.top - containerRect.top - 30 + randomY) + "px";
+
+    floatingContainer.appendChild(floatCookie);
+
+    setTimeout(() => floatCookie.remove(), 1000);
+}
+
+/* UPGRADE */
+buyUpgrade.addEventListener("click", () => {
+    if(score >= upgradeCost){
+        score -= upgradeCost;
+        pointsPerClick++;
+        perClickDisplay.textContent = pointsPerClick;
+        scoreDisplay.textContent = score;
+
+        upgradeCost = Math.ceil(upgradeCost * upgradeMultiplier);
+        upgradeMultiplier *= 1.05;
+        upgradeCostDisplay.textContent = upgradeCost;
+    } else alert("Nicht genug Cookies!");
+});
+
+/* MEGA COOKIE */
+buyMegaCookie.addEventListener("click", () => {
+    if(score >= megaCost){
+        score -= megaCost;
+        scoreDisplay.textContent = score;
+
+        const basePoints = pointsPerClick;
+        pointsPerClick = basePoints * 2;
+        perClickDisplay.textContent = pointsPerClick;
+
+        megaCost *= 2;
+        megaCostDisplay.textContent = megaCost;
+
+        let remaining = megaDuration;
+        megaTimer.textContent = remaining;
+        megaContainer.style.display = "block";
+
+        const r = progressCircle.r.baseVal.value;
+        const c = 2 * Math.PI * r;
+        progressCircle.style.strokeDasharray = `${c}`;
+        progressCircle.style.strokeDashoffset = c;
+
+        const interval = setInterval(() => {
+            remaining--;
+            megaTimer.textContent = remaining;
+            progressCircle.style.strokeDashoffset = c - (remaining/megaDuration)*c;
+
+            if(remaining <= 0){
+                clearInterval(interval);
+                pointsPerClick = basePoints;
+                perClickDisplay.textContent = pointsPerClick;
+                megaContainer.style.display = "none";
+            }
+        }, 1000);
+
+    } else alert("Nicht genug Cookies!");
+});
+
+/* SKINS KAUFEN */
+document.querySelectorAll(".buySkin").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const skin = btn.dataset.skin;
+        const cost = Number(btn.dataset.cost);
+        const shopItem = btn.parentElement;
+
+        if(score >= cost){
+            score -= cost;
+            scoreDisplay.textContent = score;
+
+            const skinBtn = document.createElement("button");
+            skinBtn.classList.add("skin-btn");
+            skinBtn.dataset.skin = skin;
+            skinBtn.textContent = skin.charAt(0).toUpperCase() + skin.slice(1) + " Cookie";
+            skinsContainer.appendChild(skinBtn);
+            shopItem.style.display = "none";
+        } else {
+            alert("Nicht genug Cookies!");
+        }
+    });
+});
+
+/* SKIN AUSWÄHLEN */
+skinsContainer.addEventListener("click", (e) => {
+    if(e.target.classList.contains("skin-btn")){
+        document.querySelectorAll(".skin-btn").forEach(b => b.classList.remove("active"));
+        e.target.classList.add("active");
+        cookie.className = e.target.dataset.skin === "standard" ? "" : "skin-" + e.target.dataset.skin;
+    }
+});
+
+/* SAFE-CODE SYSTEM */
+const safeCodes = {
+    "010203": 1000,
+    "291211": 100000
+};
+
+let enteredCode = "";
+
+const codeDisplay = document.getElementById("codeDisplay");
+const numButtons = document.querySelectorAll(".numBtn");
+const clearBtn = document.getElementById("clearCode");
+const submitSafeCode = document.getElementById("submitSafeCode");
+
+numButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        if(enteredCode.length < 6){
+            enteredCode += btn.textContent;
+            updateDisplay();
+        }
+    });
+});
+
+clearBtn.addEventListener("click", () => {
+    enteredCode = "";
+    updateDisplay();
+});
+
+submitSafeCode.addEventListener("click", () => {
+    if(safeCodes.hasOwnProperty(enteredCode)){
+        if(!usedCodes.has(enteredCode)){
+            score += safeCodes[enteredCode];
+            scoreDisplay.textContent = score;
+            alert(`Code korrekt! Du hast ${safeCodes[enteredCode].toLocaleString()} Cookies erhalten.`);
+            usedCodes.add(enteredCode);
+        } else {
+            alert("Dieser Code wurde bereits verwendet!");
+        }
+    } else {
+        alert("Falscher Code!");
+    }
+    enteredCode = "";
+    updateDisplay();
+});
+
+function updateDisplay(){
+    let displayText = "";
+    for(let i=0; i<6; i++){
+        displayText += enteredCode[i] ? enteredCode[i] : "_";
+        displayText += " ";
+    }
+    codeDisplay.textContent = displayText.trim();
+}
+</script>
+
+</body>
+</html>
