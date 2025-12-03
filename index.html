@@ -143,10 +143,10 @@ const megaContainer = document.getElementById("megaContainer");
 const progressCircle = document.querySelector(".progress-ring__circle");
 const perClickDisplay = document.getElementById("perClickNumber");
 const skinsContainer = document.getElementById("skinsContainer");
-
 const floatingContainer = document.getElementById("floatingContainer");
 
 let usedCodes = new Set();
+let megaActive = false; // Mega-Cookie Status
 
 /* COOKIE CLICK */
 cookie.addEventListener("click", () => {
@@ -156,10 +156,17 @@ cookie.addEventListener("click", () => {
     cookie.classList.add("clicked");
     setTimeout(() => cookie.classList.remove("clicked"), 200);
 
-    createFloatingCookie(pointsPerClick); // Floating-Cookie Animation
+    createFloatingCookie(pointsPerClick);
 });
 
-/* Floating Cookie Animation mit zufälliger Position */
+/* Enter-Taste deaktivieren */
+document.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" || e.keyCode === 13){
+        e.preventDefault();
+    }
+});
+
+/* Floating Cookie Animation */
 function createFloatingCookie(amount){
     const floatCookie = document.createElement("div");
     floatCookie.className = "floating-cookie";
@@ -168,9 +175,7 @@ function createFloatingCookie(amount){
     const rect = cookie.getBoundingClientRect();
     const containerRect = floatingContainer.getBoundingClientRect();
 
-    // Zufälliger horizontaler Offset (-30 bis +30px)
     const randomX = Math.random() * 60 - 30; 
-    // Zufälliger vertikaler Offset (-20 bis -60px über dem Cookie)
     const randomY = Math.random() * 40 - 60;
 
     floatCookie.style.left = (rect.left + rect.width / 2 - containerRect.left - 15 + randomX) + "px";
@@ -197,6 +202,11 @@ buyUpgrade.addEventListener("click", () => {
 
 /* MEGA COOKIE */
 buyMegaCookie.addEventListener("click", () => {
+    if(megaActive){
+        alert("Mega Cookie läuft bereits!");
+        return;
+    }
+
     if(score >= megaCost){
         score -= megaCost;
         scoreDisplay.textContent = score;
@@ -205,8 +215,8 @@ buyMegaCookie.addEventListener("click", () => {
         pointsPerClick = basePoints * 2;
         perClickDisplay.textContent = pointsPerClick;
 
-        megaCost *= 2;
-        megaCostDisplay.textContent = megaCost;
+        megaActive = true;
+        buyMegaCookie.disabled = true;
 
         let remaining = megaDuration;
         megaTimer.textContent = remaining;
@@ -227,6 +237,8 @@ buyMegaCookie.addEventListener("click", () => {
                 pointsPerClick = basePoints;
                 perClickDisplay.textContent = pointsPerClick;
                 megaContainer.style.display = "none";
+                megaActive = false;
+                buyMegaCookie.disabled = false;
             }
         }, 1000);
 
@@ -268,7 +280,7 @@ skinsContainer.addEventListener("click", (e) => {
 /* SAFE-CODE SYSTEM */
 const safeCodes = {
     "010203": 1000,
-    "291211": 100000
+    "121115": 100000
 };
 
 let enteredCode = "";
