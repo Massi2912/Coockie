@@ -149,7 +149,7 @@ let usedCodes = new Set();
 let megaActive = false; // Mega-Cookie Status
 
 /* COOKIE CLICK */
-cookie.addEventListener("click", () => {
+cookie.addEventListener("click", (e) => {
     score += pointsPerClick;
     scoreDisplay.textContent = score;
 
@@ -157,13 +157,7 @@ cookie.addEventListener("click", () => {
     setTimeout(() => cookie.classList.remove("clicked"), 200);
 
     createFloatingCookie(pointsPerClick);
-});
-
-/* Enter-Taste deaktivieren */
-document.addEventListener("keydown", (e) => {
-    if(e.key === "Enter" || e.keyCode === 13){
-        e.preventDefault();
-    }
+    createParticlesAtClick(e);
 });
 
 /* Floating Cookie Animation */
@@ -185,6 +179,79 @@ function createFloatingCookie(amount){
 
     setTimeout(() => floatCookie.remove(), 1000);
 }
+
+/* COOKIE PARTICLES */
+function createParticlesAtClick(e) {
+    const rect = cookie.getBoundingClientRect();
+    let offsetX, offsetY;
+
+    if (e.clientX !== undefined && e.clientY !== undefined) {
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+    } else {
+        offsetX = Math.random() * rect.width;
+        offsetY = Math.random() * rect.height;
+    }
+
+    const particleCount = 12;
+    for (let i = 0; i < particleCount; i++) {
+        const p = document.createElement("div");
+        p.className = "cookie-particle";
+
+        p.style.left = offsetX + "px";
+        p.style.top = offsetY + "px";
+
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = 40 + Math.random() * 40;
+        const x = Math.cos(angle) * distance + "px";
+        const y = Math.sin(angle) * distance + "px";
+
+        p.style.setProperty("--x", x);
+        p.style.setProperty("--y", y);
+
+        cookie.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+    }
+}
+
+/* SPACE + ENTER: Nur einmal pro Tastendruck */
+let keyPressed = false;
+
+document.addEventListener("keydown", (e) => {
+    if((e.code === "Space" || e.code === "Enter") && !keyPressed){
+        e.preventDefault();
+        keyPressed = true;
+
+        // Cookie Klick ausführen
+        score += pointsPerClick;
+        scoreDisplay.textContent = score;
+
+        cookie.classList.add("clicked");
+        setTimeout(() => cookie.classList.remove("clicked"), 200);
+
+        createFloatingCookie(pointsPerClick);
+
+        const rect = cookie.getBoundingClientRect();
+        const fakeEvent = {
+            clientX: rect.left + Math.random() * rect.width,
+            clientY: rect.top + Math.random() * rect.height
+        };
+        createParticlesAtClick(fakeEvent);
+    }
+});
+
+document.addEventListener("keyup", (e) => {
+    if(e.code === "Space" || e.code === "Enter"){
+        keyPressed = false;
+    }
+});
+
+/* Enter-Taste deaktivieren Standardverhalten */
+document.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" || e.keyCode === 13){
+        e.preventDefault();
+    }
+});
 
 /* UPGRADE */
 buyUpgrade.addEventListener("click", () => {
