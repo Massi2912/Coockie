@@ -19,7 +19,15 @@ body {
 }
 
 h1 { font-size: 60px; margin: 20px 0 10px 0; }
-.score { font-size: 32px; margin-bottom: 20px; }
+.score { font-size: 32px; margin-bottom: 10px; }
+
+/* ▶ NEU: Stoppuhr */
+.playtime {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #8b5a2b;
+    font-weight: bold;
+}
 
 /* Glow Effekt + Hover */
 #cookie {
@@ -115,7 +123,6 @@ h1 { font-size: 60px; margin: 20px 0 10px 0; }
     }
 }
 
-
 /* Chocolate chips */
 #cookie::before,
 #cookie::after,
@@ -170,12 +177,12 @@ h1 { font-size: 60px; margin: 20px 0 10px 0; }
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    transition: transform 0.2s, box-shadow 0.2s; /* NEU */
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .shop-item:hover {
-    transform: scale(1.03); /* NEU */
-    box-shadow: 0 0 20px rgba(0,0,0,0.15); /* NEU */
+    transform: scale(1.03);
+    box-shadow: 0 0 20px rgba(0,0,0,0.15);
 }
 
 button {
@@ -240,3 +247,4 @@ button:hover { transform: scale(1.05); }
     padding: 10px;
     cursor: pointer;
 }
+
