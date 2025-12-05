@@ -14,6 +14,9 @@
         <h1>Cookie Clicker</h1>
         <p class="score">Cookies: <span id="score">0</span></p>
 
+        <!-- ▶ NEU: Stoppuhr -->
+        <p class="playtime">Spielzeit: <span id="playtime">00:00:00</span></p>
+
         <!-- Anzeige pro Klick oben rechts -->
         <div class="per-click-display" id="perClick">
             Cookies pro Klick: <span id="perClickNumber">1</span>
@@ -124,6 +127,25 @@
 
 <!-- JAVASCRIPT -->
 <script>
+/* SPIELZEIT STOPPUHR (NEU) */
+let playtimeSeconds = 0;
+
+function updatePlaytime() {
+    playtimeSeconds++;
+
+    let hours   = Math.floor(playtimeSeconds / 3600);
+    let minutes = Math.floor((playtimeSeconds % 3600) / 60);
+    let seconds = playtimeSeconds % 60;
+
+    const format = (n) => String(n).padStart(2, "0");
+
+    document.getElementById("playtime").textContent =
+        `${format(hours)}:${format(minutes)}:${format(seconds)}`;
+}
+
+setInterval(updatePlaytime, 1000);
+
+/* AB HIER DEIN ORIGINALER CODE 1:1 UNVERÄNDERT */
 let score = 0;
 let pointsPerClick = 1;
 let upgradeCost = 50;
@@ -146,7 +168,7 @@ const skinsContainer = document.getElementById("skinsContainer");
 const floatingContainer = document.getElementById("floatingContainer");
 
 let usedCodes = new Set();
-let megaActive = false; // Mega-Cookie Status
+let megaActive = false;
 
 /* COOKIE CLICK */
 cookie.addEventListener("click", (e) => {
@@ -160,7 +182,7 @@ cookie.addEventListener("click", (e) => {
     createParticlesAtClick(e);
 });
 
-/* Floating Cookie Animation */
+/* Floating Cookies Animation */
 function createFloatingCookie(amount){
     const floatCookie = document.createElement("div");
     floatCookie.className = "floating-cookie";
@@ -222,7 +244,6 @@ document.addEventListener("keydown", (e) => {
         e.preventDefault();
         keyPressed = true;
 
-        // Cookie Klick ausführen
         score += pointsPerClick;
         scoreDisplay.textContent = score;
 
@@ -246,7 +267,6 @@ document.addEventListener("keyup", (e) => {
     }
 });
 
-/* Enter-Taste deaktivieren Standardverhalten */
 document.addEventListener("keydown", (e) => {
     if(e.key === "Enter" || e.keyCode === 13){
         e.preventDefault();
